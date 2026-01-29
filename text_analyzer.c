@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<string.h>
+#include<stdlib.h>
 typedef struct
 {
     int characters;
@@ -8,17 +9,33 @@ typedef struct
     int paragraphs;
 } Result;
 
-void read_input(char text[], int size)
+char *read_input(char *text, int *capacity)
 {
-    char line[200];
-
+    char line[100];
+    int length = 0;
+    int line_length;
     printf("Text Analyzer Tool v1\n");
     printf("Enter text (Ctrl+D to stop):\n\n");
 
-    while (fgets(line, sizeof(line), stdin) != NULL)
-    {
-        strcat(text, line);
+    while (fgets(line, sizeof(line), stdin) )
+{
+        line_length=strlen(line);
+        while(length + line_length + 1 > *capacity)
+        {
+            *capacity *= 2;
+            char * temp = realloc(text, *capacity);
+            if (temp == NULL)
+            {
+                printf("Memory allocation failed\n");
+                exit(1);
+            }
+            text = temp;
+        }
+        strcpy(text + length, line);
+        length += line_length;
     }
+    text[length]= '\0';
+    return text;
 }
 
 Result analyze(char text[])
@@ -33,7 +50,7 @@ Result analyze(char text[])
     {
         char ch = text[i];
 
-        if (ch != ' ' && ch != '\n' && ch != '.')
+        if (ch != ' ' && ch != '\n' && ch != '.' && ch != '?' && ch != '!')
         {
             r.characters++;
 
@@ -52,7 +69,7 @@ Result analyze(char text[])
                 inside_word = 0;
             }
         }
-        else if (ch == '.')
+        else if (ch == '.' || ch == '?' || ch == '!')
         {
             if (inside_word)
             {
@@ -72,12 +89,6 @@ Result analyze(char text[])
             {
                 r.words++;
                 inside_word = 0;
-            }
-
-            if (sentence_has_word)
-            {
-                r.sentences++;
-                sentence_has_word = 0;
             }
 
             if (line_has_word == 0)
@@ -113,13 +124,19 @@ void print_result(Result r)
 
 int main()
 {
-    char text[2000] = "";
+    char *text ;
+    int capacity=1000;
+    text=malloc(capacity*sizeof(char));
+    text[0] = '\0';
 
-    read_input(text, sizeof(text));
+    text=read_input(text, &capacity);
+
 
     Result r = analyze(text);
 
     print_result(r);
+    
+    free(text);
 
     return 0;
 }
