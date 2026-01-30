@@ -7,6 +7,8 @@ typedef struct
     int words;
     int sentences;
     int paragraphs;
+    char longest_word[100];
+    int char_max_count;
 } Result;
 
 char *read_input(char *text, int *capacity)
@@ -41,11 +43,14 @@ char *read_input(char *text, int *capacity)
 Result analyze(char text[])
 {
     Result r = {0, 0, 0, 0};
-
     int inside_word = 0;
     int sentence_has_word = 0;
     int line_has_word = 0;
-
+    char long_word[100];
+    char longest_word[100];
+    int char_max_count=0;
+    int char_count=0;
+     
     for (int i = 0; text[i] != '\0'; i++)
     {
         char ch = text[i];
@@ -53,7 +58,8 @@ Result analyze(char text[])
         if (ch != ' ' && ch != '\n' && ch != '.' && ch != '?' && ch != '!')
         {
             r.characters++;
-
+            long_word[char_count]=ch;
+            char_count++;
             if (!inside_word)
             {
                 inside_word = 1;
@@ -63,14 +69,27 @@ Result analyze(char text[])
         }
         else if (ch == ' ')
         {
+            if(r.char_max_count<char_count)
+            {
+                r.char_max_count=char_count;
+                long_word[char_count]='\0';
+                strcpy(r.longest_word,long_word);
+            }
             if (inside_word)
             {
                 r.words++;
                 inside_word = 0;
             }
+            char_count=0;
         }
         else if (ch == '.' || ch == '?' || ch == '!')
         {
+            if(r.char_max_count< char_count)
+            {
+                r.char_max_count=char_count;
+                long_word[char_count]='\0';
+                strcpy(r.longest_word,long_word);
+            }
             if (inside_word)
             {
                 r.words++;
@@ -85,6 +104,12 @@ Result analyze(char text[])
         }
         else if (ch == '\n')
         {
+            if(r.char_max_count<char_count)
+            {
+                r.char_max_count=char_count;
+                long_word[char_count]='\0';
+                strcpy(r.longest_word,long_word);
+            }
             if (inside_word)
             {
                 r.words++;
@@ -97,8 +122,17 @@ Result analyze(char text[])
             }
 
             line_has_word = 0;
+            char_count=0;
         }
     }
+    if(char_max_count<char_count)
+    {
+        char_max_count=char_count;
+        long_word[char_count]='\0';
+        strcpy(r.longest_word,long_word);
+        r.char_max_count=char_max_count;
+    }
+     printf("Longest word: %s (Length: %d)\n",r.longest_word,r.char_max_count);
 
     if (inside_word)
         r.words++;
