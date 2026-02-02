@@ -11,7 +11,7 @@ typedef struct
     int char_max_count;
 } Result;
 
-char *read_input(char *text, int *capacity)
+char *read_input(char *text, int *capacity,int argc,char **argv,FILE *fp)
 {
     char line[100];
     int length = 0;
@@ -19,7 +19,7 @@ char *read_input(char *text, int *capacity)
     printf("Text Analyzer Tool v1\n");
     printf("Enter text (Ctrl+D to stop):\n\n");
 
-    while (fgets(line, sizeof(line), stdin) )
+    while (fgets(line, sizeof(line), fp))
 {
         line_length=strlen(line);
         while(length + line_length + 1 > *capacity)
@@ -37,6 +37,7 @@ char *read_input(char *text, int *capacity)
         length += line_length;
     }
     text[length]= '\0';
+    fclose(fp);
     return text;
 }
 
@@ -101,6 +102,7 @@ Result analyze(char text[])
                 r.sentences++;
                 sentence_has_word = 0;
             }
+            char_count=0;
         }
         else if (ch == '\n')
         {
@@ -125,13 +127,13 @@ Result analyze(char text[])
             char_count=0;
         }
     }
-    if(char_max_count<char_count)
+    if(r.char_max_count<char_count)
     {
-        char_max_count=char_count;
+        r.char_max_count=char_count;
         long_word[char_count]='\0';
         strcpy(r.longest_word,long_word);
-        r.char_max_count=char_max_count;
     }
+    
      printf("Longest word: %s (Length: %d)\n",r.longest_word,r.char_max_count);
 
     if (inside_word)
@@ -156,14 +158,25 @@ void print_result(Result r)
 }
 
 
-int main()
+int main(int argc,char **argv)
 {
+    FILE *fp;
+    fp=fopen("T20_World_cup.txt","r");
+    if(fp==NULL)
+    {
+        printf("file is not there da magney\n");
+        exit (1);
+    }
+    for(int i=1;i<argc;i++)
+    {
+        printf("Argument %d: %s\n", i, argv[i]);
+    }
     char *text ;
     int capacity=1000;
     text=malloc(capacity*sizeof(char));
     text[0] = '\0';
 
-    text=read_input(text, &capacity);
+    text=read_input(text, &capacity,argc,argv,fp);
 
 
     Result r = analyze(text);
