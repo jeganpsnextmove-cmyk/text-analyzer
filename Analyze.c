@@ -1,46 +1,5 @@
-#include<stdio.h>
 #include<string.h>
-#include<stdlib.h>
-typedef struct
-{
-    int characters;
-    int words;
-    int sentences;
-    int paragraphs;
-    char longest_word[100];
-    int char_max_count;
-} Result;
-
-char *read_input(char *text, int *capacity,int argc,char **argv,FILE *fp)
-{
-    char line[100];
-    int length = 0;
-    int line_length;
-    printf("Text Analyzer Tool v1\n");
-    printf("Enter text (Ctrl+D to stop):\n\n");
-
-    while (fgets(line, sizeof(line), fp))
-{
-        line_length=strlen(line);
-        while(length + line_length + 1 > *capacity)
-        {
-            *capacity *= 2;
-            char * temp = realloc(text, *capacity);
-            if (temp == NULL)
-            {
-                printf("Memory allocation failed\n");
-                exit(1);
-            }
-            text = temp;
-        }
-        strcpy(text + length, line);
-        length += line_length;
-    }
-    text[length]= '\0';
-    fclose(fp);
-    return text;
-}
-
+#include"header.h"
 Result analyze(char text[])
 {
     Result r = {0, 0, 0, 0};
@@ -146,44 +105,4 @@ Result analyze(char text[])
         r.paragraphs++;
 
     return r;
-}
-void print_result(Result r)
-{
-    printf("\n--- Analysis Result ---\n");
-    printf("Characters : %d\n", r.characters);
-    printf("Words      : %d\n", r.words);
-    printf("Sentences  : %d\n", r.sentences);
-    printf("Paragraphs : %d\n", r.paragraphs);
-    printf("------------------------\n");
-}
-
-
-int main(int argc,char **argv)
-{
-    FILE *fp;
-    fp=fopen("T20_World_cup.txt","r");
-    if(fp==NULL)
-    {
-        printf("file is not there da magney\n");
-        exit (1);
-    }
-    for(int i=1;i<argc;i++)
-    {
-        printf("Argument %d: %s\n", i, argv[i]);
-    }
-    char *text ;
-    int capacity=1000;
-    text=malloc(capacity*sizeof(char));
-    text[0] = '\0';
-
-    text=read_input(text, &capacity,argc,argv,fp);
-
-
-    Result r = analyze(text);
-
-    print_result(r);
-    
-    free(text);
-
-    return 0;
 }
